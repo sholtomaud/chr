@@ -9,6 +9,8 @@ use strict;
 use warnings;
 use Git::Wrapper;
 use Time::Local;
+use Env;
+use Env qw(PATH HOME TERM);
 
 #Chromicon modules
 use FindBin qw($Bin);
@@ -80,6 +82,22 @@ my $git = Git::Wrapper->new($dir);
     foreach my $script ( keys %hash ){
       print "$script\n";
     }
+  }
+  elsif ( lc($ARGV[0]) eq 'new'){
+    my $new_dir = $ENV{HOME}.'\\'.$ARGV[1];
+    mkdir $new_dir if (! -d $new_dir);
+    my $devlog = DevLog->new( 
+      date    => $year.$mon.$mday,
+      time    => $hour.$min.$sec,
+      comment => "Created project",
+      keyword => 'INITIATED',
+      script  => $ARGV[1],
+    );
+    $devlog->dev_log;
+    print "New project created at [$new_dir]\n";
+    chdir $new_dir;
+    
+    
   }
   elsif ( lc($ARGV[0]) eq 'push'){
     my $href = DevLog->list(); 
