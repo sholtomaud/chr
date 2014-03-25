@@ -9,6 +9,7 @@ use strict;
 use warnings;
 use Git::Wrapper;
 use Time::Local;
+use local::lib '';
 use Env;
 use Env qw(PATH HOME TERM);
 
