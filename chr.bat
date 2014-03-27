@@ -28,10 +28,36 @@ Chr dos commands - wondering whether we need to MOOSIFY all of this in modules t
 
 =head1 VERSION
 
-Version 0.05
+Version 0.08
 
 =cut
 
+our $VERSION = '0.04';
+
+=head1 SYNOPSIS
+
+Use this module to log a transaction to a database location specified by logpath
+
+Code snippet.
+
+  use DevLog;
+  
+  my $log = DevLog->new( 
+    logpath => $log_path, #required, defaults to current directory of script \\db
+    logdb   => $log_db, #required, defaults to 'Log.db'
+    date    => $current_date, #defaults to current date
+    time    => $current_time, #defaults to current time
+    comment => $comment,
+    status  => $status,
+    keyword => $keyword, #required
+    errmsg  => $errmsg, #required
+    script  => $script_name,
+    user    => $user_name # defaults to $ENV{'USERNAME'}
+  );
+
+  $log->log;
+     
+=cut
 
 
 main: {
