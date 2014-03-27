@@ -21,6 +21,19 @@ use FindBin qw($Bin);
 #use lib "$Bin/lib/"; 
 use DevLog;
 
+
+=head1 DevLog
+
+Chr dos commands - wondering whether we need to MOOSIFY all of this in modules themselves, which becomes a little recursive!?
+
+=head1 VERSION
+
+Version 0.05
+
+=cut
+
+
+
 main: {
 
 my $file = 'C:\\Dev\\Log.txt';

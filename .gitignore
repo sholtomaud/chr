@@ -1,2 +1,8 @@
 lib/*
 Console2/*
+blib/*
+inc/*
+META.*
+MYMETA.*
+Makefile
+pm_to_*
