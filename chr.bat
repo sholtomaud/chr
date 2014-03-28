@@ -91,26 +91,64 @@ my $git = Git::Wrapper->new($dir);
   my $comment = 'imported somethink';
   my $keyword = 'IMPTEST';
 
-  my %functions = ( start=>1, new=>1, list=>1, 'git.update'=>1, makepod =>1 ) ;
+  my %functions = ( 
+                    start=>{
+                      'doco'=>'Start logging current project',
+                      'use'=>'chr start [project]'
+                    }, 
+                    new=>{
+                      'doco'=>'Create a new module from git template',
+                      'use'=>'chr new [project]'
+                    }, 
+                    list=>{
+                      'doco'=>'List logs of projects',
+                      'use'=>'chr list '
+                      
+                    }, 
+                    'git.update'=>{
+                      'doco'=>'Update remote repo. Default to current dir',
+                      'use'=>'chr git.update [project]'
+                      
+                    }, 
+                    makepod=>{
+                      'doco'=>'Makepod for project',
+                      'use'=>'chr makepod'
+                      
+                    }, 
+                    'cpanm.install'=>{
+                      'doco'=>'Fetch git repo and install with cpanm',
+                      'use'=>'chr cpanm.install [repo]'
+                    } 
+                  ) ;
+    
+    
+    my $logpath = 'C:\\Dev\\data\\';
+    
+    
     my $devlog = DevLog->new( 
       comment => $comment,
       status  => $status,
       keyword => $keyword,
       script  => $homedir,
       errmsg  => $errmsg,
+      logpath => $logpath
     );
 
   
   if ( lc($ARGV[0]) eq '-help' ){
-    print "\nChromicon Utils \n-----------------\n";
-    foreach (keys %functions){
-      print "$_ \n";
+    print "\nChromicon Utils \n==================\n";
+    my $header = sprintf ("%-15s %-25s %-30s","Function","Usage","Doco");
+    my $separator = sprintf ("%-15s %-25s %-30s","---------------","-------------------------","------------------------------");
+    print "$header\n$separator\n";
+    foreach (sort keys %functions){
+      my $list = sprintf ("%-15s %-25s %-30s",$_, $functions{$_}->{use},$functions{$_}->{doco}); #$_->{use} ,$_->{doco});
+      print "$list\n";
     }
   }
   elsif ( lc($ARGV[0]) eq 'start'){
     print "ARGV [$ARGV[1]]\n";
     
-    $devlog->dev_log;
+    $devlog->dev_log($ARGV[1]);
   }
   elsif( lc($ARGV[0]) eq 'list'){
     my $href = $devlog->list(); 
@@ -131,6 +169,15 @@ my $git = Git::Wrapper->new($dir);
     $devlog->dev_log;
     print "New project created at [$new_dir]\n";
     chdir $new_dir;
+  }
+  elsif ( lc($ARGV[0]) eq 'cpanm.install'){
+    my $repo = $ARGV[1];
+    my $git_repo = 'git://github.com/shotlom/'.$repo.'.git';
+    #my $sys_command = "cpanm $git_repo --install_base $ENV{INICHR}";
+    my $sys_command = qq(cpanm $git_repo); #  --local-lib "$ENV{INICHR}");
+    print "fetching [$repo] saving to [$ENV{INICHR}]\n"; 
+    my $system = system ($sys_command);
+    print "system output [ $system ]\n"; 
   }
   elsif ( lc($ARGV[0]) eq 'git.update'){
     my @pm_files = <./lib/*.pm>;
