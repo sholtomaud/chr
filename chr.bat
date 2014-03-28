@@ -101,13 +101,13 @@ my $git = Git::Wrapper->new($dir);
                       'use'=>'chr new [project]'
                     }, 
                     list=>{
-                      'doco'=>'List logs of projects',
+                      'doco'=>'List logs of projects from SQLite.db',
                       'use'=>'chr list '
                       
                     }, 
                     'git.update'=>{
-                      'doco'=>'Update remote repo. Default to current dir',
-                      'use'=>'chr git.update [project]'
+                      'doco'=>'git.push remote repo. Default repo is current dir',
+                      'use'=>'chr git.update comment'
                       
                     }, 
                     makepod=>{
@@ -116,12 +116,12 @@ my $git = Git::Wrapper->new($dir);
                       
                     }, 
                     'cpanm.inichr'=>{
-                      'doco'=>'Fetch git repo and install with cpanm',
-                      'use'=>'chr cpanm.install [repo]'
+                      'doco'=>'Fetch git repo, install to INIPATH',
+                      'use'=>'chr cpanm.inichr [repo]'
                     }, 
                     'cpanm.local'=>{
-                      'doco'=>'Fetch git repo and install with cpanm',
-                      'use'=>'chr cpanm.install [repo]'
+                      'doco'=>'Fetch git repo, install local Perl',
+                      'use'=>'chr cpanm.local [repo]'
                     } 
                   ) ;
     
@@ -139,7 +139,7 @@ my $git = Git::Wrapper->new($dir);
     );
 
   
-  if ( lc($ARGV[0]) eq '-help' ){
+  if ( lc($ARGV[0]) =~ m{^--|-help} ){
     print "\nChromicon Utils \n==================\n";
     my $header = sprintf ("%-15s %-25s %-30s","Function","Usage","Doco");
     my $separator = sprintf ("%-15s %-25s %-30s","---------------","-------------------------","------------------------------");
