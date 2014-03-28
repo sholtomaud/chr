@@ -8,7 +8,7 @@ set HOME=C:\Dev\
 rem set INICHR=S:\Hydstra\prod\hyd\dat\ini\chr\
 set INICHR=C:\temp\inichrtest\
 #set PERL_MB_OPT=--install_base C:\temp\test\
-#set PERL_MM_OPT=INSTALL_BASE=C:\temp\test\
+set PERL_MM_OPT=INSTALL_BASE=S:/Hydstra/prod/hyd/dat/ini/chr
 #set INSTALL_BASE=C:\temp\test\
 
 set drive=%CD:~0,2%

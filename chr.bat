@@ -115,7 +115,11 @@ my $git = Git::Wrapper->new($dir);
                       'use'=>'chr makepod'
                       
                     }, 
-                    'cpanm.install'=>{
+                    'cpanm.inichr'=>{
+                      'doco'=>'Fetch git repo and install with cpanm',
+                      'use'=>'chr cpanm.install [repo]'
+                    }, 
+                    'cpanm.local'=>{
                       'doco'=>'Fetch git repo and install with cpanm',
                       'use'=>'chr cpanm.install [repo]'
                     } 
@@ -170,14 +174,27 @@ my $git = Git::Wrapper->new($dir);
     print "New project created at [$new_dir]\n";
     chdir $new_dir;
   }
-  elsif ( lc($ARGV[0]) eq 'cpanm.install'){
+  elsif ( lc($ARGV[0]) eq 'cpanm.inichr'){
     my $repo = $ARGV[1];
     my $git_repo = 'git://github.com/shotlom/'.$repo.'.git';
     #my $sys_command = "cpanm $git_repo --install_base $ENV{INICHR}";
+    #$ENV{PERL_MM_OPT} = 'INSTALL_BASE=C:/temp/inichr';
+    $ENV{PERL_MM_OPT} = 'INSTALL_BASE=S:/Hydstra/prod/hyd/dat/ini/chr';
     my $sys_command = qq(cpanm $git_repo); #  --local-lib "$ENV{INICHR}");
-    print "fetching [$repo] saving to [$ENV{INICHR}]\n"; 
+    #print "fetching [$repo] saving to [$ENV{INICHR}]\n"; 
+    print "PERL_MM_OPT [$ENV{PERL_MM_OPT}] \n"; 
     my $system = system ($sys_command);
     print "system output [ $system ]\n"; 
+  }
+  elsif ( lc($ARGV[0]) eq 'cpanm.local'){
+    my $repo = $ARGV[1];
+    my $git_repo = 'git://github.com/shotlom/'.$repo.'.git';
+    #my $sys_command = "cpanm $git_repo --install_base $ENV{INICHR}";
+    #my $sys_command = qq(cpanm $git_repo); #  --local-lib "$ENV{INICHR}");
+    #print "fetching [$repo] saving to [$ENV{INICHR}]\n"; 
+    print "PERL_MM_OPT [$ENV{PERL_MM_OPT}] \n"; 
+    #my $system = system ($sys_command);
+    #print "system output [ $system ]\n"; 
   }
   elsif ( lc($ARGV[0]) eq 'git.update'){
     my @pm_files = <./lib/*.pm>;
