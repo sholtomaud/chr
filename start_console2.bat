@@ -5,7 +5,6 @@ set GIT_INSTALL_ROOT=C:\Users\smaud\AppData\Local\GitHub\PortableGit_054f2e797eb
 set POSH_GIT=C:\Users\smaud\AppData\Local\GitHub\PoshGit_8aecd991d8ccf3dc78b8cd397ee4e1595f8556d4\profile.example.ps1
 set PATH=%PATH%;C:\Program Files (x86)\Git\bin;C:\Dev\chr\
 set HOME=C:\Dev\
-rem set INICHR=S:\Hydstra\prod\hyd\dat\ini\chr\
 set INICHR=C:\temp\inichrtest\
 rem set PERL_MB_OPT=--install_base C:\temp\test\
 rem set PERL_MM_OPT=INSTALL_BASE=S:/Hydstra/prod/hyd/dat/ini/chr
