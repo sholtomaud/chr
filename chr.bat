@@ -15,6 +15,8 @@ use Env;
 use Env qw(PATH HOME TERM);
 use Pod::Select;
 use Cwd;
+use SemVer;
+use List::Util qw(first max);
 
 #Chromicon modules
 use FindBin qw($Bin);
@@ -139,7 +141,7 @@ my $git = Git::Wrapper->new($dir);
     );
 
   
-  if ( lc($ARGV[0]) =~ m{^--|-help} ){
+  if ( lc($ARGV[0]) =~ m{^--|-h|-help} ){
     print "\nChromicon Utils \n==================\n";
     my $header = sprintf ("%-15s %-25s %-30s","Function","Usage","Doco");
     my $separator = sprintf ("%-15s %-25s %-30s","---------------","-------------------------","------------------------------");
@@ -195,6 +197,82 @@ my $git = Git::Wrapper->new($dir);
     print "PERL_MM_OPT [$ENV{PERL_MM_OPT}] \n"; 
     #my $system = system ($sys_command);
     #print "system output [ $system ]\n"; 
+  }
+  elsif ( lc($ARGV[0]) eq 'tag'){
+    my $dir = getcwd;
+    my $git = Git::Wrapper->new($dir);
+    my @tags = $git->tag();
+    my (@major,@minor,@patch);
+    my %vers;
+    #my $VER = SemVer->parse($tags[$#tags]);
+     my $major = 0;
+     my $minor = 0;
+     my $patch = 1;
+    if ( !defined $vers{$major} && $vers{$major}{$minor} ){
+      $vers{$major}{$minor}{$patch}++;
+    }
+    foreach (@tags){
+      print "tags [$_]\n";
+      #my @del = ('-d',$_);
+      #$git->tag(@del);
+      my $VER = SemVer->parse($_);  
+      ($major,$minor,$patch) = split (/\./, $VER);
+      $vers{$major}{$minor}{$patch}++;
+      #push (@major,$major);
+      #push (@minor,$minor);
+      #push (@patch,$patch);
+    }
+    #my $maxmajor = max ( @major );
+    #my $maxminor = max ( @minor );
+    #my $maxpatch = max ( @patch );
+    
+    my $maxmajor = max keys %vers;
+    my $maxminor = max keys %{$vers{$maxmajor}};
+    my $maxpatch = max keys %{$vers{$maxmajor}{$maxminor}};
+    
+    print "old max patch [ $maxpatch ]\n";
+ 
+    if ( lc($ARGV[1]) =~ /^-major/){
+      $maxmajor++;
+      $maxminor = 0;
+      $maxpatch = 0;
+    }
+    elsif ( lc($ARGV[1]) =~ /^-minor/){
+      $maxminor++;
+      $maxpatch = 0;
+    }
+    elsif ( lc($ARGV[1]) =~ /^-patch/){
+      $maxpatch++;
+    }
+    my $old = $maxpatch - 1;
+    my $ER = SemVer->new("$maxmajor.$maxminor.$old");
+    my $somtagtext = $git->show('1.2.0');
+    print "tag text [$somtagtext]\n";
+    my $NEWVER = SemVer->new("$maxmajor.$maxminor.$maxpatch");
+    print "new max patch [ $maxpatch ] NEWVER [$NEWVER]\n";
+    my @tag = ('-m', qq{Hello World},'-a',$NEWVER);
+    my $add = $git->tag(@tag);
+    
+    
+    my @logs = $git->log();
+    foreach (@logs){
+      my $author = $_->author();
+      my $date = $_->date();
+      my $id = $_->id();
+      my $msg = $_->message();
+      print "$date : $msg";
+    }
+    
+    #my $version = sprintf("%s.%03s%03s",$major,$minor,$patch);
+    #my @tag = ('-m', qq{Hello World},'-a',qq{$major.$minor$patch});
+    #my @tag = ('-m', qq{Hello World},'-a',$version);
+    
+    #my $add = $git->tag(qw/ -a "0.0.2" -m "hi"/);
+    
+    
+ 
+    
+  
   }
   elsif ( lc($ARGV[0]) eq 'git.update'){
     my @pm_files = <./lib/*.pm>;

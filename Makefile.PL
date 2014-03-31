@@ -36,6 +36,8 @@ requires (
    'Pod::Select'       => 0.01,     
    'Cwd'               => 0.01,     
    'FindBin'           => 0.01,     
+   'SemVer'           => 0.01,     
+   'List::Util'           => 0.01,     
 );
 
 #cpanm_git('Logger');
