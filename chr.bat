@@ -102,10 +102,13 @@ my $git = Git::Wrapper->new($dir);
                       'doco'=>'Create a new module from git template',
                       'use'=>'chr new [project]'
                     }, 
+                    test=>{
+                      'doco'=>'dmake test for module',
+                      'use'=>'chr test'
+                    }, 
                     list=>{
                       'doco'=>'List logs of projects from SQLite.db',
                       'use'=>'chr list '
-                      
                     }, 
                     'git.update'=>{
                       'doco'=>'git.push remote repo. Default repo is current dir',
@@ -114,7 +117,7 @@ my $git = Git::Wrapper->new($dir);
                     }, 
                     makepod=>{
                       'doco'=>'Makepod for project',
-                      'use'=>'chr makepod'
+                      'use'=>'chr makepod [module]'
                       
                     }, 
                     'cpanm.inichr'=>{
@@ -208,19 +211,27 @@ my $git = Git::Wrapper->new($dir);
      my $major = 0;
      my $minor = 0;
      my $patch = 1;
-    if ( !defined $vers{$major} && $vers{$major}{$minor} ){
+    
+    if ( ! @tags ){
+      print "Initialize tags: major [$major] minor [$minor] patch [$patch]\n";
       $vers{$major}{$minor}{$patch}++;
     }
-    foreach (@tags){
-      print "tags [$_]\n";
-      #my @del = ('-d',$_);
-      #$git->tag(@del);
-      my $VER = SemVer->parse($_);  
-      ($major,$minor,$patch) = split (/\./, $VER);
-      $vers{$major}{$minor}{$patch}++;
-      #push (@major,$major);
-      #push (@minor,$minor);
-      #push (@patch,$patch);
+    else{
+      foreach (@tags){
+        print "tags [$_]\n";
+        #my @del = ('-d',$_);
+        #$git->tag(@del);
+        my $VER = SemVer->parse($_);  
+        ($major,$minor,$patch) = split (/\./, $VER);
+        $major = ( !defined $major )? 0 : $major; 
+        $minor = ( !defined $minor )? 0 : $minor; 
+        $patch = ( !defined $patch )? 1 : $patch; 
+        print "major [$major] minor [$minor] patch [ $patch ], \n";
+        $vers{$major}{$minor}{$patch}++;
+        #push (@major,$major);
+        #push (@minor,$minor);
+        #push (@patch,$patch);
+      }
     }
     #my $maxmajor = max ( @major );
     #my $maxminor = max ( @minor );
@@ -230,8 +241,8 @@ my $git = Git::Wrapper->new($dir);
     my $maxminor = max keys %{$vers{$maxmajor}};
     my $maxpatch = max keys %{$vers{$maxmajor}{$maxminor}};
     
-    print "old max patch [ $maxpatch ]\n";
- 
+    print "old max patch [$maxpatch]\n";
+    
     if ( lc($ARGV[1]) =~ /^-major/){
       $maxmajor++;
       $maxminor = 0;
@@ -246,14 +257,13 @@ my $git = Git::Wrapper->new($dir);
     }
     my $old = $maxpatch - 1;
     my $ER = SemVer->new("$maxmajor.$maxminor.$old");
-    my $somtagtext = $git->show('1.2.0');
-    print "tag text [$somtagtext]\n";
+    my %somtagtext = $git->show;
+    print "show [$_] \n" for keys %somtagtext;
     my $NEWVER = SemVer->new("$maxmajor.$maxminor.$maxpatch");
     print "new max patch [ $maxpatch ] NEWVER [$NEWVER]\n";
     my @tag = ('-m', qq{Hello World},'-a',$NEWVER);
     my $add = $git->tag(@tag);
-    
-    
+        
     my @logs = $git->log();
     foreach (@logs){
       my $author = $_->author();
@@ -268,10 +278,7 @@ my $git = Git::Wrapper->new($dir);
     #my @tag = ('-m', qq{Hello World},'-a',$version);
     
     #my $add = $git->tag(qw/ -a "0.0.2" -m "hi"/);
-    
-    
- 
-    
+
   
   }
   elsif ( lc($ARGV[0]) eq 'git.update'){
@@ -331,22 +338,36 @@ my $git = Git::Wrapper->new($dir);
     }
   }
   elsif ( lc($ARGV[0]) eq 'makepod'){
-    my $pm = $ARGV[2].'\\lib\\'.$ARGV[1].'.pm';
+    my $dir = getcwd;
+    my $pm = $dir.'\\lib\\'.$ARGV[1].'.pm';
     print "Making POD from [$pm]\n";
     #system( podselect $pm > 'README.pod');
     podselect({-output => "README.pod"}, $pm);
     print "Done\n";
   }
   elsif ( lc($ARGV[0]) eq 'test'){
-    my @pm_files = </lib/*.pm>;
+    my $dir = getcwd;
+    my @pm_files = <$dir/lib/*.pm>;
     foreach my $file ( @pm_files ){ 
       print "Making POD from [$file]\n";
       podselect({-output => "README.pod"}, $file);
       print "Done\n";
     }
+    print "perl Makefile.pl\n";
+    my $makefile_err = system("perl Makefile.pl");
+    print "Output from perl Makefile [$makefile_err]\n";
     print "dmake test\n";
     my $err = system("dmake test");
     print "Output from dmake [$err]\n";
+  }
+  elsif ( lc($ARGV[0]) eq 'pod'){
+    my $dir = getcwd;
+    my @pm_files = <*.pm>;
+    foreach my $file ( @pm_files ){ 
+      print "Making POD from [$file]\n";
+      podselect({-output => "README.pod"}, $file);
+      print "Done\n";
+    }
   }
   else {
     print "command [$ARGV[0]] not recognised. Quitting.\n";
