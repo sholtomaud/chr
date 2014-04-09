@@ -119,6 +119,12 @@ my $git = Git::Wrapper->new($dir);
                       'doco'=>'Makepod for project',
                       'use'=>'chr makepod [module]'
                       
+                    },
+ 
+                    pod=>{
+                      'doco'=>'Makepod for project (assumes one pm in dir)',
+                      'use'=>'chr pod'
+                      
                     }, 
                     'cpanm.inichr'=>{
                       'doco'=>'Fetch git repo, install to INIPATH',
