@@ -111,8 +111,8 @@ my $git = Git::Wrapper->new($dir);
                       'use'=>'chr test.verbose'
                     },
                     'validate.config'=>{
-                      'doco'=>'Validates the json config files',
-                      'use'=>'chr validate.config'
+                      'doco'=>'Validates json configs for importing',
+                      'use'=>'not implemented'
                     }, 
                     list=>{
                       'doco'=>'List logs of projects from SQLite.db',
