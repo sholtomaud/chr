@@ -105,6 +105,14 @@ my $git = Git::Wrapper->new($dir);
                     test=>{
                       'doco'=>'dmake test for module',
                       'use'=>'chr test'
+                    },
+                    'test.verbose'=>{
+                      'doco'=>'verbose dmake test for module',
+                      'use'=>'chr test.verbose'
+                    },
+                    'validate.config'=>{
+                      'doco'=>'Validates the json config files',
+                      'use'=>'chr validate.config'
                     }, 
                     list=>{
                       'doco'=>'List logs of projects from SQLite.db',
@@ -201,11 +209,13 @@ my $git = Git::Wrapper->new($dir);
     my $repo = $ARGV[1];
     my $git_repo = 'git://github.com/shotlom/'.$repo.'.git';
     #my $sys_command = "cpanm $git_repo --install_base $ENV{INICHR}";
-    #my $sys_command = qq(cpanm $git_repo); #  --local-lib "$ENV{INICHR}");
+    my $sys_command = qq(cpanm $git_repo); #  --local-lib "$ENV{INICHR}");
     #print "fetching [$repo] saving to [$ENV{INICHR}]\n"; 
-    print "PERL_MM_OPT [$ENV{PERL_MM_OPT}] \n"; 
+    #print "PERL_MM_OPT [$ENV{PERL_MM_OPT}] \n"; 
     #my $system = system ($sys_command);
-    #print "system output [ $system ]\n"; 
+    #print "system output [ $system ]\n";
+    my $system = system ($sys_command);
+    print "system output [ $system ]\n";     
   }
   elsif ( lc($ARGV[0]) eq 'tag'){
     my $dir = getcwd;
@@ -343,10 +353,85 @@ my $git = Git::Wrapper->new($dir);
       print "ERROR!!\nProblem with dmake test.\n    Please run dmake test manually from cmd window.\n"
     }
   }
+  elsif ( lc($ARGV[0]) eq 'git.roundtrip'){
+    my @pm_files = <./lib/*.pm>;
+    print "home dir [$homedir]\n";
+    my $msg = ( $ARGV[1] =~ m{^homedir_} ) ? "Standard commit to correct bugs etc." : $ARGV[1];
+    print "Making POD files\n";
+    foreach my $file ( @pm_files ){ 
+      print "problem with [$file]\n" if ( ! podselect({-output => "README.pod"}, $file) );
+    }
+    print "Running Tests\n";
+    if ( system("dmake test") == 0 ){
+      print "\nUpdating Git Repository\n";
+      my $dir = getcwd;
+      my @dir_components = split(/\//,$dir);
+      my $repo = $dir_components[$#dir_components];
+      my $git = Git::Wrapper->new($dir);
+      my $status = $git->status;
+      
+      print "\n[$repo] repo status\n-------------------\n";
+      for my $type (qw<indexed changed unknown conflict>) {
+        my @states = $status->get($type)
+            or next;
+        print "Files in $type state\n";
+        for (@states) {
+            print '  ', $_->mode, ' ', $_->from;
+            print ' renamed to ', $_->to
+                if $_->mode eq 'renamed';
+            print "\n";
+        }
+      }
+      print "Adding all files to [$repo] repo\n";
+      my $add = $git->add(qw / * /, {all=>1});
+      print "Add returned [$add]\n";
+      my @message = ('--message', qq{$msg});
+      print "Commiting. -m [$msg]\n";
+      my $result  = $git->commit(@message,{ all => 1});
+      print "git commit ok\n" if ($result ==0);
+      #print $_->message for $git->log;
+      my $git_repo = 'https://github.com/shotlom/'.$repo.'.git';
+      print "Git Repo [$git_repo]\n";
+      my @push = ($git_repo,'master');
+      my $push    = $git->push(@push);
+      print "git push ok\n" if ($push == 0 );
+      print "installing with capnm [$repo]\n";
+      my $cpanm_git_repo = 'git://github.com/shotlom/'.$repo.'.git';
+      my $sys_command = qq(cpanm $cpanm_git_repo); #  --local-lib "$ENV{INICHR}");
+      my $system  = system ($sys_command); 
+      print "cpanm install [$system]\n";
+          
+      my $devlog = DevLog->new( 
+        comment => $msg,
+        status  => 'ok',
+        keyword => 'git.roundtrip',
+        script  => $homedir,
+        user    => 'smaud',
+        errmsg  => ''
+      );
+      $devlog->dev_log;
+      
+    }
+    else{
+      print "ERROR!!\nProblem with dmake test.\n    Please run dmake test manually from cmd window.\n"
+    }
+  }
   elsif ( lc($ARGV[0]) eq 'makepod'){
     my $dir = getcwd;
-    my $pm = $dir.'\\lib\\'.$ARGV[1].'.pm';
-    print "Making POD from [$pm]\n";
+    my $pm;
+    
+    if ( -e $dir.'\\lib\\'.$ARGV[1].'.pm' ){
+      $pm = $dir.'\\lib\\'.$ARGV[1].'.pm';
+      print "Making POD from [$pm]\n";
+    }
+    elsif( -e $dir.'\\'.$ARGV[1].'.pm'  ){
+      $pm = $dir.'\\'.$ARGV[1].'.pm';
+      print "Making POD from [$pm]\n";
+    }
+    else{
+      print "Can't find [$ARGV[1]] in [$dir]\n";
+    }
+    
     #system( podselect $pm > 'README.pod');
     podselect({-output => "README.pod"}, $pm);
     print "Done\n";
@@ -364,6 +449,36 @@ my $git = Git::Wrapper->new($dir);
     print "Output from perl Makefile [$makefile_err]\n";
     print "dmake test\n";
     my $err = system("dmake test");
+    print "Output from dmake [$err]\n";
+  }
+  elsif ( lc($ARGV[0]) eq 'test.verbose'){
+    my $dir = getcwd;
+    my @pm_files = <$dir/lib/*.pm>;
+    foreach my $file ( @pm_files ){ 
+      print "Making POD from [$file]\n";
+      podselect({-output => "README.pod"}, $file);
+      print "Done\n";
+    }
+    print "perl Makefile.pl\n";
+    my $makefile_err = system("perl Makefile.pl");
+    print "Output from perl Makefile [$makefile_err]\n";
+    print "dmake test\n";
+    my $err = system("dmake test TEST_VERBOSE=1");
+    print "Output from dmake [$err]\n";
+  }
+  elsif ( lc($ARGV[0]) eq 'validate.config'){
+    my $dir = getcwd;
+    my @pm_files = <$dir/lib/*.pm>;
+    foreach my $file ( @pm_files ){ 
+      print "Making POD from [$file]\n";
+      podselect({-output => "README.pod"}, $file);
+      print "Done\n";
+    }
+    print "perl Makefile.pl\n";
+    my $makefile_err = system("perl Makefile.pl");
+    print "Output from perl Makefile [$makefile_err]\n";
+    print "dmake test\n";
+    my $err = system("dmake test TEST_VERBOSE=1");
     print "Output from dmake [$err]\n";
   }
   elsif ( lc($ARGV[0]) eq 'pod'){

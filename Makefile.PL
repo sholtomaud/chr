@@ -17,7 +17,6 @@ resources (
    #IRC        => 'irc://irc.perl.org/#Logger',
    license    => 'http://www.perlfoundation.org/artistic_license_2_0',
    repository => 'git://github.com/shotlom/chr.git',
-   #bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Logger',
 );
 
 configure_requires (
