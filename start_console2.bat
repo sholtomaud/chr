@@ -12,6 +12,7 @@ rem set INSTALL_BASE=C:\temp\test\
 
 set drive=%CD:~0,2%
 title %drive%
-
-start %drive%/Dev/chr/console2/console.exe
+echo %drive%
+pause
+rem start %drive%/Dev/chr/console2/console.exe
 
